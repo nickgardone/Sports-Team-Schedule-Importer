@@ -335,6 +335,7 @@ def api_calendars():
         return jsonify([
             {'id': c['id'], 'name': c.get('summary', c['id'])}
             for c in cals
+            if c.get('accessRole') in ('owner', 'writer')
         ])
     except Exception as e:
         return jsonify({'error': str(e)}), 500
