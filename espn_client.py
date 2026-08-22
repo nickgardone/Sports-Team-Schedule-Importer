@@ -8,7 +8,13 @@ ESPN_BASE = "https://site.api.espn.com/apis/site/v2/sports"
 class ESPNClient:
     def __init__(self):
         self.session = requests.Session()
-        self.session.headers.update({'User-Agent': 'sports-calendar/1.0'})
+        self.session.headers.update({
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+            'Accept': 'application/json, text/plain, */*',
+            'Accept-Language': 'en-US,en;q=0.9',
+            'Referer': 'https://www.espn.com/',
+            'Origin': 'https://www.espn.com',
+        })
 
     def _get(self, url, params=None):
         try:
