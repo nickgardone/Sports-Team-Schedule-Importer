@@ -2,7 +2,7 @@ import requests
 from datetime import datetime
 from leagues import LEAGUE_CONFIG
 
-ESPN_BASE = "https://site.api.espn.com/apis/site/v2/sports"
+ESPN_BASE = "https://site.web.api.espn.com/apis/site/v2/sports"
 
 
 class ESPNClient:
