@@ -1,0 +1,51 @@
+name: Health Check
+
+on:
+  schedule:
+    - cron: '0 12 1 * *'   # 1st of every month at noon UTC
+    - cron: '0 12 15 * *'  # 15th of every month at noon UTC
+  workflow_dispatch:        # manual trigger (used for test email)
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Run health check
+        id: check
+        run: python scripts/health_check.py
+        continue-on-error: true
+
+      - name: Read report
+        id: report
+        run: |
+          REPORT=$(cat health_report.txt)
+          echo "body<<EOF" >> $GITHUB_OUTPUT
+          echo "$REPORT" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Send email
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{ secrets.GMAIL_USERNAME }}
+          password: ${{ secrets.GMAIL_APP_PASSWORD }}
+          to: NGardone@Gmail.com
+          from: Sports Calendar Monitor <${{ secrets.GMAIL_USERNAME }}>
+          subject: >-
+            ${{ steps.check.outcome == 'success' && '✓ Sports Calendar — All Systems Go' || '✗ Sports Calendar — Action Required' }}
+          body: ${{ steps.report.outputs.body }}
+
+      - name: Fail workflow if checks failed
+        if: steps.check.outcome == 'failure'
+        run: exit 1
