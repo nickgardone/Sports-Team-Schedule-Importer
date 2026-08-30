@@ -14,7 +14,7 @@ from google_calendar import (
     CALENDAR_COLORS,
     GoogleCalendarWebClient,
 )
-from leagues import LEAGUE_CONFIG
+from leagues import LEAGUE_CONFIG, LEAGUE_GROUPS
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-change-in-production')
@@ -178,14 +178,13 @@ def generate_ics(games, calendar_name):
 def index():
     authed = 'credentials' in session
     user_email = session.get('user_email')
-    leagues = list(LEAGUE_CONFIG.keys())
     team_based = {k: v['team_based'] for k, v in LEAGUE_CONFIG.items()}
     sync_count = _get_sync_count()
     return render_template(
         'index.html',
         authed=authed,
         user_email=user_email,
-        leagues=leagues,
+        league_groups=LEAGUE_GROUPS,
         team_based=team_based,
         colors=CALENDAR_COLORS,
         sync_count=sync_count,

@@ -39,6 +39,21 @@ class ESPNClient:
 
         for lk in leagues_to_search:
             cfg = LEAGUE_CONFIG[lk]
+
+            # Leagues with a static team list skip the ESPN API.
+            if 'teams' in cfg:
+                for t in cfg['teams']:
+                    if q in t['name'].lower():
+                        results.append({
+                            'id': t['id'],
+                            'name': t['name'],
+                            'abbreviation': '',
+                            'league': lk,
+                            'sport': cfg['sport'],
+                            'league_slug': cfg['league'],
+                        })
+                continue
+
             url = f"{ESPN_BASE}/{cfg['sport']}/{cfg['league']}/teams"
             data = self._get(url, params={'limit': 200})
             if not data:
@@ -79,6 +94,15 @@ class ESPNClient:
         cfg = LEAGUE_CONFIG.get(league_key)
         if not cfg or not cfg.get('team_based'):
             return []
+
+        # Leagues with a pre-defined team list (e.g. college conferences) skip
+        # the ESPN batch endpoint, which doesn't filter by conference.
+        if 'teams' in cfg:
+            return sorted(
+                [{'id': t['id'], 'name': t['name'], 'league': league_key}
+                 for t in cfg['teams']],
+                key=lambda t: t['name'],
+            )
 
         url = f"{ESPN_BASE}/{cfg['sport']}/{cfg['league']}/teams"
         data = self._get(url, params={'limit': 200})
