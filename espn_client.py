@@ -118,12 +118,19 @@ class ESPNClient:
         years_to_try = [int(season)] if season else [year, year + 1]
 
         for season_year in years_to_try:
-            data = self._get(url, params={'season': season_year})
-            if data is None:
-                continue
-            events = data.get('events', [])
-            if events:
-                return events, season_year
+            # Prefer the regular season (type 2) to avoid returning only
+            # preseason games when the regular season schedule is already published.
+            # Fall back to ESPN's default (current active season type) if needed.
+            for params in (
+                {'season': season_year, 'seasontype': 2},
+                {'season': season_year},
+            ):
+                data = self._get(url, params=params)
+                if data is None:
+                    continue
+                events = data.get('events', [])
+                if events:
+                    return events, season_year
 
         return [], None
 
